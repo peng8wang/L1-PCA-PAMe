@@ -2,7 +2,7 @@
 
 This folder contains the MATLAB source codes for the implementation of all the experiments in the paper
 
-Linear Convergence of Proximal Alternating Maximization Method with Extrapolation for L1-PCA" (Submitted to SIAM Journal on Optimization (SIOPT))
+"Linear Convergence of Proximal Alternating Maximization Method with Extrapolation for L1-PCA" (Submitted to SIAM Journal on Optimization (SIOPT))
 by Peng Wang, Huikang Liu, Anthony Man-Cho So.
 
 * Contact: Peng Wang
@@ -12,7 +12,7 @@ by Peng Wang, Huikang Liu, Anthony Man-Cho So.
 
 This package contains 2 experimental tests to output the results in the paper:
 
-* In the folder named phase-transition, we conduct the experiment of phase transition to test recovery performance and running time of our proposed PPM and compare it with SDP-based method in Amini et al. (2018), the spectral clustering (SC) method in Su et al. (2019), and the local penalized ML estimation (PMLE) method in Gao et al. (2017).
+* In the folder named convergence-performance, we conduct the experiment to investigate the convergence performance of the proposed method on synthetic and real data sets.  We also compare it with the standard PAM, the inertial PAM (iPAM) in Pock & Sabach (2016), and the Gauss-Seidel type inertial PAM (GS-iPAM) in Gao et al. (2019).
   - demo_phase_transition.m: Output the recovery performance and running time of above methods
   - PPM.m: Implement our method in Algorithm 1
   - PMLE.m: Implement the local penalized ML estimation method in Gao et al. (2017)
