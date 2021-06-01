@@ -18,6 +18,7 @@ This package contains 2 experimental tests to output the results in the paper:
   - PAMe.m: Implement the proposed proximal alternating minimization method with extrapolation (PAMe)
   - iPAM.m: Implement the inertial proximal alternating minimization method (iPAM) in Pock and Sabach (2016)
   - GS_iPAM.m: Implement the Guass-Seidel type inertial proximal alternating minimization method (GS-iPAM) in Gao et al. (2019)
+  - laprnd.m: Generate i.i.d. laplacian random number drawn from the laplacian distribution with mean mu and standard deviation sigma. 
 
 * In the folder named convergence-performance, we conduct the experiments of convergence performance to test the number of iterations needed by our proposed
 PPM to exactly identify the underlying communities.
