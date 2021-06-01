@@ -1,51 +1,56 @@
 
 clear; clc;
 
-%% generate the synthetic data with the Laplacian noise
-n = 2000; d = 4000; K = 50;
-X = randn(d,n) + laprnd(d,n,0,0.5);
+%% generate the synthetic data using the l1-fixed effect model
+n = 4000; %%% n = number of samples
+d = 2000; %%% d = number of features
+K = 50;   %%% K = dimension of subspace
+X = randn(d,n) + laprnd(d,n,0,0.5); 
 
 %% choose the running algorithm
 run_PAM = 1; run_PAMe = 1; run_iPAM = 1; run_GS = 1;
 
 %% set the parameters
-numinit = 1;  maxiter = 5e2; tol = 1e-6; print = 1; extra = 1; 
+numinit = 1;  maxiter = 1e3; tol = 1e-6; print = 1; extra = 1; 
 
 for j = 1:numinit
     
-    %% generate initial point: P, Q
+    %% generate initial point: P0, Q0
     F = randn(d, K); [U,S,V] = svd(F,'econ'); Q0 = U(:,1:K);
-    P0 = ones(n,K).*sign(randn(n,K)); alpha = 1e-5; beta = 1e3;
+    P0 = ones(n,K).*sign(randn(n,K)); 
+    
+    %% set the step-size parameter
+    alpha = 1e-5; beta = 1e3;
 
     %% Standard Proximal Alternating Mimization (PAM)
     if run_PAM == 1            
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', 0);
-        [Q_PA, P_PA, time_collect_PA, fval_collect_PA, Q_collect_PA] = PAMe(X, Q0, P0, alpha, beta, opts);
-        time_PA = max(time_collect_PA); optval_PA = sum(sum(abs(X'*Q_PA)));   
+        tic; [Q_PA, P_PA, fval_collect_PA, Q_collect_PA] = PAMe(X, Q0, P0, alpha, beta, opts);
+        time_PA = toc; optval_PA = sum(sum(abs(X'*Q_PA)));   
         fprintf('PAM: fval = %f, critical gap = %f\n', optval_PA, norm(P_PA-sign(X'*Q_PA),'fro'));
     end
 
     %% Proximal Alternating Mimization with extrapolation (PAMe)
     if run_PAMe == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        [Q_PE, P_PE, time_collect_PE, fval_collect_PE, Q_collect_PE, iter] = PAMe(X, Q0, P0, alpha, beta, opts);
-        time_PE = max(time_collect_PE); optval_PE = sum(sum(abs(X'*Q_PE)));             
+        tic; [Q_PE, P_PE, fval_collect_PE, Q_collect_PE, iter] = PAMe(X, Q0, P0, alpha, beta, opts);
+        time_PE = toc; optval_PE = sum(sum(abs(X'*Q_PE)));             
         fprintf('PAMe: fval of = %f, critical gap = %f\n', optval_PE, norm(P_PE-sign(X'*Q_PE),'fro'));
     end
 
     %% Inertial Proximal Alternating Mimization (iPAM)
     if run_iPAM == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        [Q_IP, P_IP, time_collect_IP, fval_collect_IP, Q_collect_IP] = iPAM(X, Q0, P0, alpha, beta, opts);
-        time_IP = max(time_collect_IP); optval_IP = sum(sum(abs(X'*Q_IP)));   
+        tic; [Q_IP, P_IP, fval_collect_IP, Q_collect_IP] = iPAM(X, Q0, P0, alpha, beta, opts);
+        time_IP = toc; optval_IP = sum(sum(abs(X'*Q_IP)));   
         fprintf('iPAM: fval of = %f, critical gap = %f\n', optval_IP, norm(P_IP-sign(X'*Q_IP),'fro'));
     end
 
     %% Gauss-Seidel Inertial Proximal Alternating Mimization (GS-iPAM)
     if run_GS == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        [Q_GS, P_GS, time_collect_GS, fval_collect_GS, Q_collect_GS] = GS_iPAM(X, Q0, P0, alpha, beta, opts);
-        time_GS = max(time_collect_GS); optval_GS = sum(sum(abs(X'*Q_GS)));   
+        tic; [Q_GS, P_GS, fval_collect_GS, Q_collect_GS] = GS_iPAM(X, Q0, P0, alpha, beta, opts);
+        time_GS = toc; optval_GS = sum(sum(abs(X'*Q_GS)));   
         fprintf('GS-iPAM: fval = %f, critical gap = %f\n', optval_GS, norm(P_GS-sign(X'*Q_GS),'fro'));
     end
     
@@ -117,12 +122,4 @@ ylabel('$\mathbf{f}^\mathbf{k}-\mathbf{f}^\mathbf{*}$', 'Interpreter', 'latex', 
 xrange = max([size_1,size_2,size_3,size_4]);
 xlim([0 xrange+5]);
 
-
-% if n == 2000 && d == 1000
-%     title('n=2000, d=1000, K=10');
-% elseif n == 1000 && d == 2000
-%     title('n=1000, d=2000, K=10');
-% else
-%     title('n=2000, d=2000, K=10');
-% end
 

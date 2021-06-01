@@ -1,9 +1,9 @@
 
-function [Q, P, time_collect, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alpha, beta, opts)
+function [Q, P, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alpha, beta, opts)
     
     fprintf('Proximal Alternating Maximation with Extrapolation for L1-PCA \n');
 
-    %% Default parameter setting
+    %% default parameter setting
     iternum = opts.iternum;  
     tol = opts.tol; 
     if isfield(opts,'print')
@@ -18,16 +18,13 @@ function [Q, P, time_collect, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alp
     end
     
     %% initial setting
-    residu_P = []; residu_Q = []; fval_collect = []; time_collect = [];  
-    fval = trace(P'*X'*Q); time_collect(1) = 0;
-    fval_collect(1) = fval; Q_collect(:,:,1) = Q;
-    tic;
-    theta = 1; %% parameter in restarting scheme 
+    residu_P = []; residu_Q = []; fval_collect = []; 
+    fval = trace(P'*X'*Q); fval_collect(1) = fval; Q_collect(:,:,1) = Q;
     X_Q = X'*Q; X_E = X_Q;
     
     for iter = 1:iternum          
             
-            theta_old = theta; X_Q_old = X_Q;
+            X_Q_old = X_Q;
                         
             %% check the optimality for P
             P1 = P + X_E;
@@ -40,19 +37,13 @@ function [Q, P, time_collect, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alp
             %% check the optimality for Q
             X_P = X*P;
             Q1 = Q + X_P; [U1, ~, V1] = svd(Q1, 'econ'); Q1 = U1*V1';  
-            Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;             
+            Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;          
             
             %% update Q
             [U, ~, V] = svd(beta*Q + X_P, 'econ'); Q = U * V'; 
             
             %% extrapolation scheme
             if extra == 1
-%                 if mod(iternum, 10) == 1  
-%                     theta = 1; theta_old = theta;
-%                 else
-%                     theta = 0.5*(1+sqrt(1+4*theta^2)); 
-%                 end     
-%                 gamma = (theta_old - 1)/theta;
                 gamma = 1;
             else
                 gamma = 0;
@@ -60,15 +51,14 @@ function [Q, P, time_collect, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alp
             X_Q = X'*Q; 
             X_E = (1+gamma)*X_Q - gamma*X_Q_old; 
             
-            %% collect and print update information
-            fval = trace(X_P'*Q); fval_collect(iter+1) = fval; 
-            time_collect(iter+1) = toc; Q_collect(:,:,iter+1) = Q;
+            %% collect and print the iterate information
+            fval = trace(X_P'*Q); fval_collect(iter+1) = fval; Q_collect(:,:,iter+1) = Q;
                         
             if print == 1
                 fprintf('Iternum: %d, Residual of P: %f, Residual of Q: %f\n',  iter, P_residu, Q_residu); 
             end
             
-            %% check the stopping Criterion
+            %% check the stopping criterion
             if Q_residu + P_residu < tol
                 break;
             end

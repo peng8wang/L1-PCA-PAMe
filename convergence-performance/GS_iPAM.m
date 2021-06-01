@@ -1,5 +1,5 @@
 
-function [Q, P, time_collect, fval_collect, Q_collect] = GS_iPAM(X, Q, P, alpha, beta, opts)
+function [Q, P, fval_collect, Q_collect] = GS_iPAM(X, Q, P, alpha, beta, opts)
     
     %%%% implement the Guass-Seidel type inertial PALM in Gao et al. (2019) for L1-PCA %%%% 
     fprintf('Gauss-Seidel Inertial Proximal Alternating Mimization for L1-PCA \n');
@@ -17,11 +17,10 @@ function [Q, P, time_collect, fval_collect, Q_collect] = GS_iPAM(X, Q, P, alpha,
     else
         extra = 0;
     end
+    
     %% initial setting
-    residu_P = []; residu_Q = []; fval_collect = []; time_collect = [];  
-    fval = trace(P'*X'*Q); time_collect(1) = 0; 
-    fval_collect(1) = fval; Q_collect(:,:,1) = Q;
-    tic;
+    residu_P = []; residu_Q = []; fval_collect = [];
+    fval = trace(P'*X'*Q); fval_collect(1) = fval; Q_collect(:,:,1) = Q;
     X_Q = X'*Q; E_P = P; E_Q = Q;
     
     for iter = 1:iternum
@@ -54,9 +53,8 @@ function [Q, P, time_collect, fval_collect, Q_collect] = GS_iPAM(X, Q, P, alpha,
             E_Q = Q + gamma_Q * (Q - E_Q_old); 
             X_Q = X'*Q;
             
-            %% collect and print update information
-            fval = trace(X_P'*Q); fval_collect(iter+1) = fval; 
-            time_collect(iter+1) = toc; Q_collect(:,:,iter+1) = Q;
+            %% collect and print the iterate information
+            fval = trace(X_P'*Q); fval_collect(iter+1) = fval; Q_collect(:,:,iter+1) = Q;
             
             if print == 1
                 fprintf('Iternum: %d, Residual of P: %f, Residual of Q: %f\n', iter, P_residu, Q_residu); 
