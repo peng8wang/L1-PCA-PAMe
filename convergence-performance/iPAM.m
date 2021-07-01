@@ -23,7 +23,9 @@ function [Q, P, fval_collect, Q_collect] = iPAM(X, Q, P, alpha, beta, opts)
     X_Q = X'*Q; Q_old = Q; P_old = P;
     
     for iter = 1:iternum
-                                 
+            
+            fval_old = fval;
+           
             %% inertial scheme
             if extra == 1
                 gamma_P = 1; gamma_Q = 1/2; 
@@ -32,18 +34,22 @@ function [Q, P, fval_collect, Q_collect] = iPAM(X, Q, P, alpha, beta, opts)
             end    
                        
             %% check the optimality for P
-            P1 = P + X_Q;
-            P1(P1>=0) = 1; P1(P1<0) = -1;               
-            P_residu = norm(P-P1); residu_P(iter) = P_residu; 
-
+            if print == 1
+                P1 = P + X_Q;
+                P1(P1>=0) = 1; P1(P1<0) = -1;               
+                P_residu = norm(P-P1); residu_P(iter) = P_residu; 
+            end
+            
             %% update P
             E_P = P + gamma_P * (P-P_old); P_old = P; 
             P = alpha*E_P + X_Q; P(P>=0) = 1; P(P<0) = -1;  
             
             %% check the optimality for Q
             X_P = X*P;
-            Q1 = Q + X_P; [U1, ~, V1] = svd(Q1, 'econ'); Q1 = U1*V1';  
-            Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;        
+            if print == 1
+                Q1 = Q + X_P; [U1, ~, V1] = svd(Q1, 'econ'); Q1 = U1*V1';  
+                Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;        
+            end
             
             %% update Q
             E_Q = Q + gamma_Q * (Q - Q_old); Q_old = Q;
@@ -58,7 +64,7 @@ function [Q, P, fval_collect, Q_collect] = iPAM(X, Q, P, alpha, beta, opts)
             end
             
             %% check the stopping criterion
-            if Q_residu + P_residu < tol
+            if abs(fval - fval_old) <= tol % Q_residu + P_residu < tol
                 break;
             end
 

@@ -24,20 +24,24 @@ function [Q, P, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alpha, beta, opts
     
     for iter = 1:iternum          
             
-            X_Q_old = X_Q;
+            X_Q_old = X_Q; fval_old = fval;
                         
             %% check the optimality for P
-            P1 = P + X_E;
-            P1(P1>=0) = 1; P1(P1<0) = -1;               
-            P_residu = norm(P-P1); residu_P(iter) = P_residu; 
-
+            if print == 1
+                P1 = P + X_E;
+                P1(P1>=0) = 1; P1(P1<0) = -1;               
+                P_residu = norm(P-P1); residu_P(iter) = P_residu; 
+            end
+            
             %% update P
             P = alpha*P + X_E; P(P>=0) = 1; P(P<0) = -1;  
             
             %% check the optimality for Q
             X_P = X*P;
-            Q1 = Q + X_P; [U1, ~, V1] = svd(Q1, 'econ'); Q1 = U1*V1';  
-            Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;          
+            if print == 1
+                Q1 = Q + X_P; [U1, ~, V1] = svd(Q1, 'econ'); Q1 = U1*V1';  
+                Q_residu = norm(Q - Q1); residu_Q(iter) = Q_residu;          
+            end
             
             %% update Q
             [U, ~, V] = svd(beta*Q + X_P, 'econ'); Q = U * V'; 
@@ -48,9 +52,8 @@ function [Q, P, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alpha, beta, opts
             else
                 gamma = 0;
             end     
-            X_Q = X'*Q; 
-            X_E = (1+gamma)*X_Q - gamma*X_Q_old; 
-            
+            X_Q = X'*Q; X_E = (1+gamma)*X_Q - gamma*X_Q_old; 
+                        
             %% collect and print the iterate information
             fval = trace(X_P'*Q); fval_collect(iter+1) = fval; Q_collect(:,:,iter+1) = Q;
                         
@@ -59,7 +62,7 @@ function [Q, P, fval_collect, Q_collect, iter] = PAMe(X, Q, P, alpha, beta, opts
             end
             
             %% check the stopping criterion
-            if Q_residu + P_residu < tol
+            if abs(fval - fval_old) <= tol % Q_residu + P_residu < tol
                 break;
             end
 
