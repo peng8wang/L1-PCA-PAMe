@@ -1,5 +1,5 @@
 
-function [Q, fval_collector, iter] = FPM(X, Q, opts)
+function [Q, fval_collector] = FPM(X, Q, opts)
     
     
     %% Default parameter setting
@@ -18,7 +18,7 @@ function [Q, fval_collector, iter] = FPM(X, Q, opts)
     X_Q = X'*Q;
     fval = sum(sum(abs(X_Q))); fval_collector(1) = fval;
     
-    fprintf('********* Non-greedy Fixed-Point Iterations for L1-PCA *********\n'); 
+    fprintf('********* Non-Greedy Fixed-Point Iterations for L1-PCA *********\n'); 
     
     for iter = 1:iternum   
         

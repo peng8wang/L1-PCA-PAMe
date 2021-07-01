@@ -1,5 +1,5 @@
 
-function [Q, fval_collector, iter] = PDCe(X, Q, beta, opts)
+function [Q, fval_collector] = PDCe(X, Q, beta, opts)
 
     %% Default parameter setting
     iternum = opts.iternum;  
