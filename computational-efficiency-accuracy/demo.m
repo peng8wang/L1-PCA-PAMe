@@ -12,7 +12,7 @@ clear all; clc;
 % w8a: alpha = 1e-8, beta = 1e-1
 
 %% load real-world data set
-[y, X] = libsvmread('datasets\real-sim'); 
+[y, X] = libsvmread('datasets\w8a'); 
 X = X'; [d, n] = size(X); 
 
 %% choose the dimension of subspace by the explained variance of PCA
@@ -36,7 +36,7 @@ run_PD = 1; run_PAMe = 1; run_PAM = 1; run_FP = 1; run_IP = 1; run_GS = 1;
 num_repeat = 10; maxiter = 1e3; extra = 1; print = 0; tol = 1e-6; 
 
 %% set the step-size parameters
-alpha = 1e-10; beta = 1e0;
+alpha = 1e-8; beta = 1e-1;
 
 for j = 1:num_repeat
     
@@ -48,7 +48,7 @@ for j = 1:num_repeat
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
         tic; [Q_PD, fval_collect_PD] = PDCe(X, Q0, beta, opts); 
         time_PD(j) = toc; fval_PD(j) = sum(sum(abs(X'*Q_PD)));
-        accuracy_PD(j) = 1 - clustering_error(X'*Q_PD, y, n, 2);
+        accuracy_PD(j) = clustering_accuracy(X'*Q_PD, y, n, 2);
         fprintf('PDCe: accuracy = %f, time = %f, fval = %f\n', accuracy_PD(j), time_PD(j), fval_PD(j));
     end
 
@@ -57,7 +57,7 @@ for j = 1:num_repeat
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print);
         tic; [Q_FP, fval_collect_FP] = FPM(X, Q0, opts);
         time_FP(j) = toc; fval_FP(j) = sum(sum(abs(X'*Q_FP)));
-        accuracy_FP(j) = 1 - clustering_error(X'*Q_FP, y, n, 2);
+        accuracy_FP(j) = clustering_accuracy(X'*Q_FP, y, n, 2);
         fprintf('FPM: accuracy = %f, time = %f, fval = %f\n', accuracy_FP(j), time_FP(j), fval_FP(j));
     end
     
@@ -66,7 +66,7 @@ for j = 1:num_repeat
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
         tic; [Q_PE, P_PE, fval_collect_PE] = PAMe(X, Q0, P0, alpha, beta, opts);
         time_PE(j) = toc; fval_PE(j) = sum(sum(abs(X'*Q_PE)));      
-        accuracy_PE(j) = 1 - clustering_error(X'*Q_PE, y, n, 2);
+        accuracy_PE(j) = clustering_accuracy(X'*Q_PE, y, n, 2);
         fprintf('PAMe: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
             accuracy_PE(j), norm(P_PE-sign(X'*Q_PE),'fro'), time_PE(j), fval_PE(j));
     end
@@ -76,28 +76,28 @@ for j = 1:num_repeat
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', 0);
         tic; [Q_PA, P_PA, fval_collect_PA] = PAMe(X, Q0, P0, alpha, beta, opts);
         time_PA(j) = toc; fval_PA(j) = sum(sum(abs(X'*Q_PA)));  
-        accuracy_PA(j) = 1 - clustering_error(X'*Q_PA, y, n, 2);
+        accuracy_PA(j) = clustering_accuracy(X'*Q_PA, y, n, 2);
         fprintf('PAM: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
             accuracy_PA(j), norm(P_PA-sign(X'*Q_PA),'fro'), time_PA(j), fval_PA(j));
     end
     
-        %% Inertial Proximal Alternating Mimization (iPAM)
+    %% Inertial Proximal Alternating Linearized Mimization (iPALM)
     if run_IP == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        tic; [Q_IP, P_IP, fval_collect_IP] = iPAM(X, Q0, P0, alpha, beta, opts);
+        tic; [Q_IP, P_IP, fval_collect_IP] = iPALM(X, Q0, P0, alpha, beta, opts);
         time_IP(j) = toc; fval_IP(j) = sum(sum(abs(X'*Q_IP)));   
-        accuracy_IP(j) = 1 - clustering_error(X'*Q_IP, y, n, 2);
-        fprintf('iPAM: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
+        accuracy_IP(j) = clustering_accuracy(X'*Q_IP, y, n, 2);
+        fprintf('iPALM: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
             accuracy_IP(j), norm(P_IP-sign(X'*Q_IP),'fro'), time_IP(j), fval_IP(j));
     end
 
-    %% Gauss-Seidel Inertial Proximal Alternating Mimization (GS-iPAM)
+    %% Gauss-Seidel Inertial Proximal Alternating Linearized Mimization (GiPALM)
     if run_GS == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        tic; [Q_GS, P_GS, fval_collect_GS] = GS_iPAM(X, Q0, P0, alpha, beta, opts);
+        tic; [Q_GS, P_GS, fval_collect_GS] = GiPALM(X, Q0, P0, alpha, beta, opts);
         time_GS(j) = toc; fval_GS(j) = sum(sum(abs(X'*Q_GS)));   
-        accuracy_GS(j) = 1 - clustering_error(X'*Q_GS, y, n, 2);
-        fprintf('GS-iPAM: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
+        accuracy_GS(j) = clustering_accuracy(X'*Q_GS, y, n, 2);
+        fprintf('GiPALM: accuracy = %f, critical gap = %f, time = %f, fval = %f\n',...
             accuracy_GS(j), norm(P_GS-sign(X'*Q_GS),'fro'), time_GS(j), fval_GS(j));
     end
     
@@ -128,10 +128,10 @@ end
 if run_IP == 1 
     ave_accuracy_IP = sum(accuracy_IP) / num_repeat;
     ave_time_IP = sum(time_IP) / num_repeat;
-    fprintf('iPAM: accuracy = %f, time = %f\n', ave_accuracy_IP, ave_time_IP);
+    fprintf('iPALM: accuracy = %f, time = %f\n', ave_accuracy_IP, ave_time_IP);
 end
 if run_GS == 1 
     ave_accuracy_GS = sum(accuracy_GS) / num_repeat;
     ave_time_GS = sum(time_GS) / num_repeat;
-    fprintf('GS-iPAM: accuracy = %f, time = %f\n', ave_accuracy_GS, ave_time_GS);
+    fprintf('GiPALM: accuracy = %f, time = %f\n', ave_accuracy_GS, ave_time_GS);
 end
