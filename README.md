@@ -1,4 +1,4 @@
-# Linear Convergence of Proximal Alternating Maximization Method with Extrapolation for L1-PCA
+# Linear Convergence of Proximal Alternating Minimization Method with Extrapolation for L1-PCA
 
 This folder contains the MATLAB source codes for the implementation of all the experiments in the paper
 
