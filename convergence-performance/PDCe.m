@@ -19,7 +19,7 @@ function [Q, fval_collector, Q_collect, iter] = PDCe(X, Q, beta, opts)
     fval_collector=[]; Q_collect(:,:,1) = Q;  
     fval = sum(sum(abs(X'*Q))); fval_collector(1) = fval;
        
-%     theta = 1; %% extrapolation stepsize
+    theta = 1; %% extrapolation stepsize
     Q_extra = Q; X_Q = X'*Q; subg = X*sign(X_Q);     
     fprintf('********* Proximal DC with extrapolation for L1-PCA *********\n');
 
@@ -28,18 +28,17 @@ function [Q, fval_collector, Q_collect, iter] = PDCe(X, Q, beta, opts)
         fval_old = fval;
         
         %% proximal DC step
-        Q_old = Q; % theta_old = theta;              
+        Q_old = Q; theta_old = theta;              
         [U, ~, V] = svd(Q_extra + beta*subg, 'econ'); Q = U * V';   
 
-        %% adaptive restarting scheme
+        %% fixed restarting scheme
         if extra == 1
-%             if mod(iternum, 10) == 1 
-%                 theta = 1; theta_old = theta;
-%             else
-%                 theta = 0.5*(1+sqrt(1+4*theta^2)); 
-%             end     
-%             gamma = (theta_old - 1)/theta;
-            gamma = 1;
+            if mod(iternum, 10) == 1 
+                theta = 1; theta_old = theta;
+            else
+                theta = 0.5*(1+sqrt(1+4*theta^2)); 
+            end     
+            gamma = (theta_old - 1)/theta;
         else
             gamma = 0;
         end

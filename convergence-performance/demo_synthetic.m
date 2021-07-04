@@ -2,8 +2,8 @@
 clear; clc;
 
 %% basic setting
-n = 2000; %%% n = number of samples
-d = 4000; %%% d = number of features
+n = 4000; %%% n = number of samples
+d = 2000; %%% d = number of features
 K = 50;   %%% K = dimension of subspace
 
 %% generate the synthetic data using the l1-fixed effect model
@@ -21,13 +21,13 @@ numinit = 1;  maxiter = 1e3; tol = 1e-8; print = 1; extra = 1;
 [Q,S] = eigs(X'*X,K); var = sum(diag(S));
 
 for j = 1:numinit
-    
+
     %% generate initial point: P0, Q0
     F = randn(d, K); [U,S,V] = svd(F,'econ'); Q0 = U(:,1:K);
     P0 = ones(n,K).*sign(randn(n,K)); 
     
     %% set the step-size parameter
-    alpha = 1e-5; beta = 1e2;
+    alpha = 1e-5; beta = 1e3;
 
     %% Standard Proximal Alternating Mimization (PAM)
     if run_PAM == 1            
@@ -58,31 +58,31 @@ for j = 1:numinit
     %% Proximal Difference-of-Convex Algorithm with extrapolation (pDCAe)
     if run_DC == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        tic; [Q_DC, fval_collect_DC, Q_collect_DC, iter] = PDCe(X, Q0, 1e0, opts);
+        tic; [Q_DC, fval_collect_DC, Q_collect_DC, iter] = PDCe(X, Q0, 1, opts);
         time_DC = toc; optval_DC = sum(sum(abs(X'*Q_DC)));             
         fprintf('FPM: fval of = %f, explained variance: %f\n', optval_DC, norm(X'*Q_DC,'fro')^2/var);
     end
             
-    %% Inertial Proximal Alternating Mimization (iPAM)
+    %% Inertial Proximal Alternating Linearied Mimization (iPALM)
     if run_iPAM == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        tic; [Q_IP, P_IP, fval_collect_IP, Q_collect_IP] = iPAM(X, Q0, P0, alpha, beta, opts);
+        tic; [Q_IP, P_IP, fval_collect_IP, Q_collect_IP] = iPALM(X, Q0, P0, alpha, beta, opts);
         time_IP = toc; optval_IP = sum(sum(abs(X'*Q_IP)));   
-        fprintf('iPAM: fval of = %f, explained variance: %f, critical gap = %f\n',...
+        fprintf('iPALM: fval of = %f, explained variance: %f, critical gap = %f\n',...
             optval_IP, norm(X'*Q_IP,'fro')^2/var, norm(P_IP-sign(X'*Q_IP),'fro'));
     end
 
-    %% Gauss-Seidel Inertial Proximal Alternating Mimization (GS-iPAM)
+    %% Gauss-Seidel Inertial Proximal Alternating Linearied Mimization (GiPALM)
     if run_GS == 1
         opts = struct('iternum', maxiter, 'tol', tol, 'print', print, 'extra', extra);
-        tic; [Q_GS, P_GS, fval_collect_GS, Q_collect_GS] = GS_iPAM(X, Q0, P0, alpha, beta, opts);
+        tic; [Q_GS, P_GS, fval_collect_GS, Q_collect_GS] = GiPALM(X, Q0, P0, alpha, beta, opts);
         time_GS = toc; optval_GS = sum(sum(abs(X'*Q_GS)));   
-        fprintf('GS-iPAM: fval = %f, explained variance: %f, critical gap = %f\n',...
+        fprintf('GiPALM: fval = %f, explained variance: %f, critical gap = %f\n',...
             optval_GS, norm(X'*Q_GS,'fro')^2/var, norm(P_GS-sign(X'*Q_GS),'fro'));
     end
     
 end
-fprintf('Explained Variance: PAMe = %f, PAM = %f, FPM = %f, pDCAe = %f, iPAM = %f, GS-iPAM = %f \n', ...
+fprintf('Explained Variance: PAMe = %f, PAM = %f, FPM = %f, pDCAe = %f, iPALM = %f, GiPALM = %f \n', ...
     norm(X'*Q_PE,'fro')^2/var, norm(X'*Q_PA,'fro')^2/var, norm(X'*Q_FP,'fro')^2/var, norm(X'*Q_DC,'fro')^2/var, ...
     norm(X'*Q_IP,'fro')^2/var, norm(X'*Q_GS,'fro')^2/var);
 
@@ -135,9 +135,9 @@ if run_GS == 1
     semilogy(Q_dist, '->', 'Color', color4, 'LineWidth', 2); hold on;
 end
 
-legend('PAM', 'PAMe', 'FPM', 'pDCAe', 'iPAM', 'GS-iPAM', 'FontSize', 11);
+legend('PAM', 'PAMe', 'FPM', 'pDCAe', 'iPALM', 'GiPALM', 'FontSize', 11);
 xlabel('Iterations', 'FontSize', 13); 
-ylabel('$\|\mathbf{Q}^\mathbf{k}-\mathbf{Q}^\mathbf{*}\|_\mathbf{F}$', 'Interpreter', 'latex', 'FontSize', 13);
+ylabel('$||\mathbf{Q}^\texttt{k}-\mathbf{Q}^\mathbf{*}||_\mathbf{F}$', 'Interpreter', 'latex', 'FontSize', 13);
 xrange = max([size_1,size_2,size_3,size_4,size_5,size_6]);
 xlim([0 xrange+5]);
 
@@ -168,9 +168,10 @@ if run_GS == 1
     semilogy(fval_collect, '->', 'Color', color4, 'LineWidth', 2); hold on;
 end
 
-legend('PAM', 'PAMe', 'FPM', 'pDCAe', 'iPAM', 'GS-iPAM', 'FontSize', 11); 
+legend('PAM', 'PAMe', 'FPM', 'pDCAe', 'iPALM', 'GiPALM', 'FontSize', 11); 
 xlabel('Iterations', 'FontSize', 13);  
-ylabel('$\mathbf{h}^\mathbf{k}-\mathbf{h}^\mathbf{*}$', 'Interpreter', 'latex', 'FontSize', 15);
+ylabel('$\texttt{h}(\mathbf{P}^\texttt{k},\mathbf{Q}^\texttt{k})-\texttt{h}(\mathbf{P}^*,\mathbf{Q}^*)$',...
+    'Interpreter', 'latex', 'FontSize', 13);
 xlim([0 xrange+5]);
 
 
