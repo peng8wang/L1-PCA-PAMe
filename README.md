@@ -12,14 +12,14 @@ by Peng Wang, Huikang Liu, Anthony Man-Cho So.
 
 In the experimens, we report convergence performance and numerical efficiency and accuracy of the proposed method for solving L1-PCA on both synthetic and real data sets. We also compare it with fiving existing ones, which are the standard proximal alternating minimization method (PAM),  the fixed-point iteration method (FPM) in Nie et al. (2011), and the proximal difference-of-convex algorithm with extrapolation (pDCAe) in Wen et al. (2018), the inertial proximal alternating linearized minimization (iPALM) method in Pock & Sabach (2016), and the Gauss-Seidel-type iPALM (GiPALM) in Gao et al. (2019). This package contains 2 experimental tests to output the results in the paper:
 
-* In the folder named convergence-performance, we conduct the experiment to investigate the convergence performance of the proposed proximal alternating minimization method with extrapolation (PAMe) on synthetic and real data sets.  
+* In the folder named convergence-performance, we conduct the experiment to investigate the convergence performance of the proposed PAMe on synthetic and real data sets.  
   - demo_real.m: Output the convergence performance of the tested methods on real data set news20 downloaded from LIBSVM
   - demo_synthetic: Output the convergence performance of the tested methods on synthetic data sets
   - PAMe.m: Implement the proposed PAMe
   - FPM.m: Implement FPM in Nie et al. (2011)
   - PDCe.m: Implement PDCe in Wen et al. (2018) 
-  - iPALM.m: Implement iPAM in Pock and Sabach (2016)
-  - GiPALM.m: Implement GS-iPAM in Gao et al. (2019)
+  - iPALM.m: Implement iPALM in Pock and Sabach (2016)
+  - GiPALM.m: Implement GiPALM in Gao et al. (2019)
   - laprnd.m: Generate i.i.d. laplacian random number drawn from the laplacian distribution with mean mu and standard deviation sigma. 
 
 * In the folder named computational-efficiency-accuracy, we apply L1-PCA to do clustering to investigate the computational efficiency and clustering accuracy of the proposed method. 
